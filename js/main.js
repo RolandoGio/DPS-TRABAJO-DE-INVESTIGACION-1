@@ -1,5 +1,25 @@
-// Inventario (ejemplo)
-const productos = [
+// ====== POO: Clase Producto ======
+class Producto {
+  constructor({ id, nombre, precio, stock }) {
+    this.id = id;
+    this.nombre = nombre;
+    this.precio = Number(precio);
+    this.stock = Number(stock);
+  }
+  hayStock(cantidad) {
+    const c = Number(cantidad) || 0;
+    return c >= 1 && c <= this.stock;
+  }
+  descontar(cantidad) {
+    const c = Number(cantidad) || 0;
+    if (!this.hayStock(c)) throw new Error("Stock insuficiente");
+    this.stock -= c;
+    return this.stock;
+  }
+}
+
+// ====== Inventario (convertido a instancias) ======
+let productos = [
   { id: 1,  nombre: "Helado Vainilla",         precio: 1.5, stock: 10 },
   { id: 2,  nombre: "Helado Chocolate",        precio: 1.8, stock: 8  },
   { id: 3,  nombre: "Cono Simple",             precio: 0.5, stock: 25 },
@@ -16,8 +36,10 @@ const productos = [
   { id: 14, nombre: "Helado Cookies & Cream",  precio: 2.3, stock: 8  },
   { id: 15, nombre: "Helado de Café",          precio: 2.1, stock: 5  },
 ];
+productos = productos.map(p => new Producto(p));
+console.log("Producto[0] es instancia:", productos[0] instanceof Producto); // true
 
-// Utilidades de dinero e impuestos
+// ====== Utilidades de dinero e impuestos ======
 const money = n => new Intl.NumberFormat("es-SV", { style: "currency", currency: "USD" }).format(n);
 const TASA_IMPUESTO = 0.13;
 const to2 = n => Math.round(n * 100) / 100;
@@ -35,7 +57,7 @@ function calcularTotales(items, aplicarImpuesto = false) {
   return { subtotal, impuesto, total };
 }
 
-// Carrito
+// ====== Carrito ======
 const carritoData = [];
 const contenedor = document.getElementById("lista-productos");
 
@@ -71,7 +93,7 @@ function vaciarCarrito() {
   renderCarrito();
 }
 
-// Catálogo
+// ====== Catálogo ======
 function crearTarjetaProducto(producto) {
   const card = document.createElement("article");
   card.className = "producto";
@@ -124,7 +146,7 @@ function renderProductos(lista) {
 }
 renderProductos(productos);
 
-// Carrito (UI)
+// ====== Carrito (UI) ======
 function agregarAlCarrito(producto, cantidad) {
   const qty = parseInt(cantidad, 10) || 0;
   if (qty < 1) return;
@@ -180,7 +202,7 @@ function renderCarrito() {
     const btnMenos = document.createElement("button");
     btnMenos.textContent = "−";
     btnMenos.title = "Restar 1";
-    btnMenos.disabled = item.cantidad <= 1; // UX sugerida
+    btnMenos.disabled = item.cantidad <= 1;
     btnMenos.addEventListener("click", () => decrementarItem(item.id));
 
     const btnMas = document.createElement("button");
@@ -218,7 +240,7 @@ function renderCarrito() {
 }
 renderCarrito();
 
-// Factura (IVA opcional)
+// ====== Factura (IVA opcional) ======
 function mostrarFactura(items) {
   const seccion = document.getElementById("factura");
   seccion.textContent = "";
@@ -254,7 +276,6 @@ function mostrarFactura(items) {
   tabla.appendChild(tbody);
   seccion.appendChild(tabla);
 
-  // Checkbox IVA
   const ivaWrap = document.createElement("label");
   ivaWrap.style.display = "inline-flex";
   ivaWrap.style.alignItems = "center";
@@ -286,7 +307,7 @@ function mostrarFactura(items) {
   seccion.appendChild(btnSeguir);
 }
 
-// Confirmar compra
+// ====== Confirmar compra ======
 function confirmarCompra() {
   if (carritoData.length === 0) {
     alert("El carrito está vacío.");
@@ -303,7 +324,9 @@ function confirmarCompra() {
   const venta = carritoData.map(i => ({ ...i }));
   for (const i of carritoData) {
     const p = getProductoById(i.id);
+    // Mantengo la lógica previa (sin usar métodos) para no tocar el resto del código
     p.stock = p.stock - i.cantidad;
+    // Alternativa POO futura: p.descontar(i.cantidad);
   }
   carritoData.length = 0;
   renderProductos(productos);
