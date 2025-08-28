@@ -5,3 +5,8 @@ main { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; padding: 1rem; 
 .producto { border: 1px solid #eee; padding: .75rem; border-radius: .5rem; }
 
 .producto h3 { margin: 0 0 .5rem 0; font-size: 1.05rem; }
+
+#factura { border: 1px solid #ccc; padding: 1rem; margin: 1rem; border-radius: .5rem; }
+#factura h3 { margin-top: 0; }
+#factura table { width: 100%; border-collapse: collapse; }
+#factura th, #factura td { border-bottom: 1px solid #eee; padding: .5rem; text-align: left; }
