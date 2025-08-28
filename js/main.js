@@ -1,4 +1,4 @@
-// ====== POO: Clase Producto ======
+// ===== POO =====
 class Producto {
   constructor({ id, nombre, precio, stock }) {
     this.id = id;
@@ -18,7 +18,33 @@ class Producto {
   }
 }
 
-// ====== Inventario (convertido a instancias) ======
+class Inventario {
+  constructor(items = []) {
+    this.items = items; // instancias de Producto
+  }
+  all() {
+    return this.items;
+  }
+  getById(id) {
+    return this.items.find(p => p.id === id);
+  }
+  hasStock(id, cantidad) {
+    const p = this.getById(id);
+    const c = Number(cantidad) || 0;
+    return !!p && c >= 1 && c <= p.stock;
+  }
+  descontar(id, cantidad) {
+    const p = this.getById(id);
+    if (!p) throw new Error("Producto no existe");
+    const c = Number(cantidad) || 0;
+    if (c < 0) throw new Error("Cantidad inválida");
+    if (c > p.stock) throw new Error("Stock insuficiente");
+    p.stock -= c;
+    return p.stock;
+  }
+}
+
+// ===== Inventario base -> instancias =====
 let productos = [
   { id: 1,  nombre: "Helado Vainilla",         precio: 1.5, stock: 10 },
   { id: 2,  nombre: "Helado Chocolate",        precio: 1.8, stock: 8  },
@@ -37,9 +63,10 @@ let productos = [
   { id: 15, nombre: "Helado de Café",          precio: 2.1, stock: 5  },
 ];
 productos = productos.map(p => new Producto(p));
+const inventario = new Inventario(productos);
 console.log("Producto[0] es instancia:", productos[0] instanceof Producto); // true
 
-// ====== Utilidades de dinero e impuestos ======
+// ===== Dinero / IVA =====
 const money = n => new Intl.NumberFormat("es-SV", { style: "currency", currency: "USD" }).format(n);
 const TASA_IMPUESTO = 0.13;
 const to2 = n => Math.round(n * 100) / 100;
@@ -57,12 +84,13 @@ function calcularTotales(items, aplicarImpuesto = false) {
   return { subtotal, impuesto, total };
 }
 
-// ====== Carrito ======
+// ===== Carrito =====
 const carritoData = [];
 const contenedor = document.getElementById("lista-productos");
 
+// Wrapper para no romper llamadas existentes
 function getProductoById(id) {
-  return productos.find(p => p.id === id);
+  return inventario.getById(id);
 }
 
 function incrementarItem(id) {
@@ -72,7 +100,6 @@ function incrementarItem(id) {
   item.cantidad = Math.min(item.cantidad + 1, prod.stock);
   renderCarrito();
 }
-
 function decrementarItem(id) {
   const idx = carritoData.findIndex(i => i.id === id);
   if (idx === -1) return;
@@ -81,19 +108,17 @@ function decrementarItem(id) {
   if (item.cantidad === 0) carritoData.splice(idx, 1);
   renderCarrito();
 }
-
 function eliminarItem(id) {
   const idx = carritoData.findIndex(i => i.id === id);
   if (idx !== -1) carritoData.splice(idx, 1);
   renderCarrito();
 }
-
 function vaciarCarrito() {
   carritoData.length = 0;
   renderCarrito();
 }
 
-// ====== Catálogo ======
+// ===== Catálogo =====
 function crearTarjetaProducto(producto) {
   const card = document.createElement("article");
   card.className = "producto";
@@ -144,9 +169,11 @@ function renderProductos(lista) {
   contenedor.textContent = "";
   for (const prod of lista) contenedor.appendChild(crearTarjetaProducto(prod));
 }
-renderProductos(productos);
 
-// ====== Carrito (UI) ======
+// Inicial (usar inventario.all())
+renderProductos(inventario.all());
+
+// ===== Carrito (UI) =====
 function agregarAlCarrito(producto, cantidad) {
   const qty = parseInt(cantidad, 10) || 0;
   if (qty < 1) return;
@@ -240,7 +267,7 @@ function renderCarrito() {
 }
 renderCarrito();
 
-// ====== Factura (IVA opcional) ======
+// ===== Factura =====
 function mostrarFactura(items) {
   const seccion = document.getElementById("factura");
   seccion.textContent = "";
@@ -307,7 +334,7 @@ function mostrarFactura(items) {
   seccion.appendChild(btnSeguir);
 }
 
-// ====== Confirmar compra ======
+// ===== Confirmar compra =====
 function confirmarCompra() {
   if (carritoData.length === 0) {
     alert("El carrito está vacío.");
@@ -322,14 +349,17 @@ function confirmarCompra() {
     }
   }
   const venta = carritoData.map(i => ({ ...i }));
+
+  // Descuento vía Inventario
   for (const i of carritoData) {
-    const p = getProductoById(i.id);
-    // Mantengo la lógica previa (sin usar métodos) para no tocar el resto del código
-    p.stock = p.stock - i.cantidad;
-    // Alternativa POO futura: p.descontar(i.cantidad);
+    inventario.descontar(i.id, i.cantidad);
   }
+
   carritoData.length = 0;
-  renderProductos(productos);
+
+  // Re-render usando inventario.all()
+  renderProductos(inventario.all());
   renderCarrito();
+
   mostrarFactura(venta);
 }
