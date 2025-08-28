@@ -1,0 +1,7 @@
+main { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; padding: 1rem; }
+
+#lista-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .75rem; }
+
+.producto { border: 1px solid #eee; padding: .75rem; border-radius: .5rem; }
+
+.producto h3 { margin: 0 0 .5rem 0; font-size: 1.05rem; }
