@@ -44,6 +44,56 @@ class Inventario {
   }
 }
 
+class Carrito {
+  constructor() {
+    this.items = []; // [{ id, nombre, precio, cantidad }]
+  }
+  getItems() {
+    return this.items;
+  }
+  isEmpty() {
+    return this.items.length === 0;
+  }
+  #idx(id) {
+    return this.items.findIndex(i => i.id === id);
+  }
+  add(producto, cantidad = 1) {
+    const qty = Number(cantidad) || 0;
+    if (qty < 1) return;
+    const i = this.#idx(producto.id);
+    if (i >= 0) {
+      const nuevo = Math.min(this.items[i].cantidad + qty, producto.stock);
+      this.items[i].cantidad = nuevo;
+    } else {
+      this.items.push({
+        id: producto.id,
+        nombre: producto.nombre,
+        precio: producto.precio,
+        cantidad: Math.min(qty, producto.stock),
+      });
+    }
+  }
+  increment(id, getProd) {
+    const i = this.#idx(id);
+    if (i < 0) return;
+    const p = getProd(id);
+    this.items[i].cantidad = Math.min(this.items[i].cantidad + 1, p.stock);
+  }
+  decrement(id) {
+    const i = this.#idx(id);
+    if (i < 0) return;
+    this.items[i].cantidad = Math.max(this.items[i].cantidad - 1, 0);
+    if (this.items[i].cantidad === 0) this.items.splice(i, 1);
+  }
+  remove(id) {
+    const i = this.#idx(id);
+    if (i >= 0) this.items.splice(i, 1);
+  }
+  clear() {
+    this.items.length = 0;
+  }
+}
+
 // ===== Inventario base -> instancias =====
 let productos = [
   { id: 1,  nombre: "Helado Vainilla",         precio: 1.5, stock: 10 },
@@ -64,6 +114,7 @@ let productos = [
 ];
 productos = productos.map(p => new Producto(p));
 const inventario = new Inventario(productos);
+const carrito = new Carrito();
 console.log("Producto[0] es instancia:", productos[0] instanceof Producto); // true
 
 // ===== Dinero / IVA =====
@@ -84,37 +135,31 @@ function calcularTotales(items, aplicarImpuesto = false) {
   return { subtotal, impuesto, total };
 }
 
-// ===== Carrito =====
-const carritoData = [];
+// ===== Helpers / Wrappers =====
 const contenedor = document.getElementById("lista-productos");
 
-// Wrapper para no romper llamadas existentes
 function getProductoById(id) {
   return inventario.getById(id);
 }
 
+function agregarAlCarrito(producto, cantidad) {
+  carrito.add(producto, cantidad);
+  renderCarrito();
+}
 function incrementarItem(id) {
-  const item = carritoData.find(i => i.id === id);
-  if (!item) return;
-  const prod = getProductoById(id);
-  item.cantidad = Math.min(item.cantidad + 1, prod.stock);
+  carrito.increment(id, getProductoById);
   renderCarrito();
 }
 function decrementarItem(id) {
-  const idx = carritoData.findIndex(i => i.id === id);
-  if (idx === -1) return;
-  const item = carritoData[idx];
-  item.cantidad = Math.max(item.cantidad - 1, 0);
-  if (item.cantidad === 0) carritoData.splice(idx, 1);
+  carrito.decrement(id);
   renderCarrito();
 }
 function eliminarItem(id) {
-  const idx = carritoData.findIndex(i => i.id === id);
-  if (idx !== -1) carritoData.splice(idx, 1);
+  carrito.remove(id);
   renderCarrito();
 }
 function vaciarCarrito() {
-  carritoData.length = 0;
+  carrito.clear();
   renderCarrito();
 }
 
@@ -169,29 +214,9 @@ function renderProductos(lista) {
   contenedor.textContent = "";
   for (const prod of lista) contenedor.appendChild(crearTarjetaProducto(prod));
 }
-
-// Inicial (usar inventario.all())
 renderProductos(inventario.all());
 
 // ===== Carrito (UI) =====
-function agregarAlCarrito(producto, cantidad) {
-  const qty = parseInt(cantidad, 10) || 0;
-  if (qty < 1) return;
-
-  const existente = carritoData.find(i => i.id === producto.id);
-  if (existente) {
-    existente.cantidad = Math.min(existente.cantidad + qty, producto.stock);
-  } else {
-    carritoData.push({
-      id: producto.id,
-      nombre: producto.nombre,
-      precio: producto.precio,
-      cantidad: Math.min(qty, producto.stock),
-    });
-  }
-  renderCarrito();
-}
-
 function renderCarrito() {
   const panel = document.getElementById("carrito");
   panel.textContent = "";
@@ -200,7 +225,9 @@ function renderCarrito() {
   h3.textContent = "Tu carrito";
   panel.appendChild(h3);
 
-  if (carritoData.length === 0) {
+  const items = carrito.getItems();
+
+  if (items.length === 0) {
     const p = document.createElement("p");
     p.textContent = "El carrito está vacío.";
     panel.appendChild(p);
@@ -210,7 +237,7 @@ function renderCarrito() {
   const lista = document.createElement("ul");
   let totalGeneral = 0;
 
-  carritoData.forEach(item => {
+  items.forEach(item => {
     const prod = getProductoById(item.id);
     const subtotal = item.precio * item.cantidad;
     totalGeneral += subtotal;
@@ -336,11 +363,14 @@ function mostrarFactura(items) {
 
 // ===== Confirmar compra =====
 function confirmarCompra() {
-  if (carritoData.length === 0) {
+  if (carrito.isEmpty()) {
     alert("El carrito está vacío.");
     return;
   }
-  for (const item of carritoData) {
+
+  const items = carrito.getItems();
+
+  for (const item of items) {
     const prod = getProductoById(item.id);
     if (!prod) { alert(`Producto no encontrado: ${item.nombre ?? item.id}`); return; }
     if (item.cantidad > prod.stock) {
@@ -348,16 +378,14 @@ function confirmarCompra() {
       return;
     }
   }
-  const venta = carritoData.map(i => ({ ...i }));
 
-  // Descuento vía Inventario
-  for (const i of carritoData) {
+  const venta = items.map(i => ({ ...i }));
+
+  for (const i of items) {
     inventario.descontar(i.id, i.cantidad);
   }
 
-  carritoData.length = 0;
-
-  // Re-render usando inventario.all()
+  carrito.clear();
   renderProductos(inventario.all());
   renderCarrito();
 
