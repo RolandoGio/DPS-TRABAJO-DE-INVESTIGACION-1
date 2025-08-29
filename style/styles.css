@@ -1,12 +1,486 @@
-main { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; padding: 1rem; }
+/* ========= Blossom UI (celeste + rosa) ========= */
+:root{
+  --bg:#f8fbff;
+  --fg:#1f2d3d;
+  --muted:#6b7280;
+  --card:#ffffff;
+  --border:#e6ecfb;
+  --celeste:#9ddafc;
+  --celeste-600:#3aa0f3;
+  --rosa:#ffd7e8;
+  --rosa-600:#ff8fb9;
+  --shadow:0 10px 24px rgba(42,94,140,.12);
+}
 
-#lista-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .75rem; }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:linear-gradient(180deg,#fcfeff 0%,var(--bg) 100%);
+  color:var(--fg);
+}
 
-.producto { border: 1px solid #eee; padding: .75rem; border-radius: .5rem; }
+/* ========= Layout / Contenedores ========= */
+header{padding:1rem 1.2rem;}
 
-.producto h3 { margin: 0 0 .5rem 0; font-size: 1.05rem; }
+main{
+  display:grid;
+  grid-template-columns: 2fr 1fr; /* 2 columnas */
+  gap:1rem;
+  padding:1rem;
+  align-items:start; /* que pegue arriba las columnas */
+}
 
-#factura { border: 1px solid #ccc; padding: 1rem; margin: 1rem; border-radius: .5rem; }
-#factura h3 { margin-top: 0; }
-#factura table { width: 100%; border-collapse: collapse; }
-#factura th, #factura td { border-bottom: 1px solid #eee; padding: .5rem; text-align: left; }
+/* Cards centradas y columnas fluidas */
+#lista-productos{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap:1rem;
+  justify-items:center;
+}
+
+/* ========= Tarjeta de producto ========= */
+.producto{
+  position:relative;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:1rem;
+  width:100%;
+  max-width:280px;
+  box-shadow:var(--shadow);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+
+.producto:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(42,94,140,.16);}
+.producto h3{margin:0 0 .5rem 0;font-size:1.05rem}
+.producto p{margin:.25rem 0;color:var(--muted)}
+.producto input[type=number]{
+  width:72px;padding:.45rem .5rem;border:1px solid var(--border);
+  border-radius:10px;outline:none
+}
+/* logo en la esquina */
+.producto .brand-mark{
+  position:absolute; top:8px; right:8px; width:22px; height:22px; opacity:.85; pointer-events:none;
+}
+
+/* ========= Botones ========= */
+.btn{
+  border:0;padding:.45rem .75rem;border-radius:12px;font-weight:600;cursor:pointer;
+  transition:transform .05s ease, box-shadow .15s ease
+}
+.btn:active{transform:translateY(1px)}
+.btn-primary{
+  background:linear-gradient(135deg,var(--celeste),#e7f5ff);
+  color:#064663;box-shadow:0 6px 14px rgba(58,160,243,.25)
+}
+.btn-danger{
+  background:linear-gradient(135deg,var(--rosa),#fff1f7);
+  color:#6b2141;box-shadow:0 6px 14px rgba(255,143,185,.25)
+}
+.btn[disabled], .producto button:disabled{opacity:.6;cursor:not-allowed;box-shadow:none}
+
+/* ========= Carrito como Drawer + estilos base ========= */
+#carrito{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:1rem;
+  box-shadow:var(--shadow);
+  position:sticky;      /* pegado arriba en su columna */
+  top:12px;
+  align-self:start;
+}
+#carrito h3,#factura h3{margin-top:0}
+#carrito ul{padding-left:1.1rem}
+#carrito button{margin-left:.25rem}
+
+/* Drawer (se muestra con body.cart-open) */
+#carrito.drawer{
+  position:fixed; top:0; right:0; height:100vh; width:min(420px, 92vw);
+  overflow:auto; transform:translateX(110%); transition:transform .2s ease; z-index:9600;
+  border-radius:16px 0 0 16px;
+}
+body.cart-open #carrito.drawer{ transform:translateX(0) }
+
+/* Botón flotante (FAB) del carrito: arriba a la derecha */
+.fab{
+  position:fixed; right:16px; top:64px; bottom:auto; z-index:8500;
+  display:flex; align-items:center; gap:.5rem; border-radius:999px;
+}
+.fab svg{ width:18px; height:18px; }
+.fab .badge{
+  background:var(--rosa-600); color:#fff; min-width:22px; height:22px; padding:0 6px;
+  border-radius:999px; display:inline-flex; align-items:center; justify-content:center; font-weight:700;
+}
+
+/* ========= Factura (ancho completo de la grilla) ========= */
+#factura{
+  grid-column: 1 / -1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: var(--shadow);
+  margin: 0;
+}
+#factura table{width:100%;border-collapse:collapse;margin-top:.5rem}
+#factura th,#factura td{border-bottom:1px solid var(--border);padding:.5rem;text-align:left}
+
+/* ========= Pantalla de Gracias (modal centrado) ========= */
+#overlay{ position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9000; }
+#gracias{
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:min(92vw, 640px); z-index:10000;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:16px; padding:1rem 1.25rem; box-shadow:var(--shadow);
+}
+#gracias h3{margin-top:0}
+#gracias p{margin:.25rem 0 .75rem;color:var(--muted)}
+#gracias table{ width:100%; border-collapse:collapse; margin-top:.5rem }
+#gracias th,#gracias td{ border-bottom:1px solid var(--border); padding:.5rem; text-align:left }
+
+/* ========= Historial ========= */
+#historial{
+  grid-column:1 / -1;
+  margin:1rem; display:grid; gap:1rem;
+}
+#historial .ticket{
+  background:var(--card); border:1px solid var(--border);
+  border-radius:16px; padding:1rem; box-shadow:var(--shadow);
+}
+#historial .ticket table{ width:100%; border-collapse:collapse; margin-top:.5rem }
+#historial .ticket th,#historial .ticket td{ border-bottom:1px solid var(--border); padding:.5rem; text-align:left }
+
+/* ===== Footer Blossom (bloom celeste ↔ rosa — 10/10) ===== */
+.site-footer{
+  /* variables locales para afinar bloom */
+  --bloom-celeste: rgba(157,218,252,.24);
+  --bloom-rosa:   rgba(255,183,214,.26);
+
+  background:
+    /* brillos muy amplios y alejados: sin “pico” central */
+    radial-gradient(240% 200% at -25% 50%, var(--bloom-celeste) 0 56%, transparent 74%),
+    radial-gradient(240% 200% at 125% 50%, var(--bloom-rosa)   0 56%, transparent 74%),
+    /* degradado principal con extremos más saturados y centro sedoso */
+    linear-gradient(135deg,
+      #8ec8fb 0%,
+      #cfeeff 34%,
+      #f9fbff 52%,
+      #ffe7f1 68%,
+      #ffb4d3 86%,
+      #ff92c1 100%
+    );
+  border-top: 1px solid #dfe7fb;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+  color: #053d5d;
+  min-height: 84px;
+}
+.site-footer .footer-inner{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.1rem 1.25rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "brand nav"
+    "copy  nav";
+  gap: .5rem 1rem;
+  align-items: center;
+}
+.site-footer .brand{
+  grid-area: brand;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 600;
+}
+.site-footer .brand-mark{
+  width: 28px; height: 28px; display: inline-block;
+}
+.site-footer .brand-name{
+  letter-spacing: .2px;
+  text-shadow: 0 1px 0 rgba(255,255,255,.35); /* legibilidad sutil */
+}
+.site-footer .footer-nav{
+  grid-area: nav;
+  display: inline-flex;
+  gap: .9rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.site-footer .footer-nav a{
+  color: #083e63;          /* +contraste sobre el lado rosa */
+  text-decoration: none;
+  padding: .25rem .4rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.site-footer .footer-nav a:hover{
+  background: #fff1f7;
+  border-color: var(--rosa);
+  color: #6b2141;
+}
+.site-footer .copy{
+  grid-area: copy;
+  margin: 0;
+  color: #0a3d2e;
+  opacity: .85;
+  font-size: .92rem;
+}
+
+/* Footer responsive */
+@media (max-width: 720px){
+  .site-footer .footer-inner{
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "brand"
+      "nav"
+      "copy";
+    text-align: center;
+  }
+  .site-footer .footer-nav{ justify-content: center; }
+}
+
+/* Footer al fondo si hay poco contenido */
+body{
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+main{ flex: 1; }
+
+/* ========= Toast (mensajes) ========= */
+#toast{
+  position:fixed;top:16px;right:16px;z-index:9999;
+  background:#e7f5ff;border:1px solid var(--border);color:#064663;
+  padding:.7rem 1rem;border-radius:12px;box-shadow:var(--shadow);
+  opacity:0;transform:translateY(-10px);transition:all .2s ease;pointer-events:none
+}
+#toast.show{opacity:1;transform:translateY(0)}
+#toast.warn{background:#fff1f7;color:#6b2141}
+#toast.success{background:#ecfff5;color:#0a3d2e}
+
+/* ========= Responsive ========= */
+@media (max-width: 880px){
+  main{ grid-template-columns: 1fr; }
+  #factura{ grid-column: 1 / -1; }
+}
+
+/* ocultar nativo de [hidden] */
+[hidden]{ display:none !important; }
+
+/* Cute-Professional Blossom Card (más saturado) */
+.producto{
+  position: relative;
+  border-radius: 20px;
+  border: 1px solid #d8e3fb;
+  /* rosa y celeste más saturados + base */
+  background:
+    radial-gradient(120% 100% at 92% -8%,  rgba(255,110,168,.42) 0 40%, transparent 42%),
+    radial-gradient(130% 112% at -6% 108%, rgba(0,163,255,.36) 0 38%, transparent 40%),
+    linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.98) inset,
+    0 12px 28px rgba(31,45,61,.14);
+}
+
+/* micro-confeti un poco más marcado pero sutil */
+.producto::after{
+  content:"";
+  position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:
+    radial-gradient(2.5px 2.5px at 18% 22%, rgba(255,110,168,.32) 50%, transparent 51%),
+    radial-gradient(2.5px 2.5px at 68% 38%, rgba(0,163,255,.28) 50%, transparent 51%),
+    radial-gradient(2.5px 2.5px at 84% 76%, rgba(255,176,0,.26) 50%, transparent 51%);
+}
+
+.producto:hover{
+  transform: translateY(-2px);
+  border-color: #cad8f7;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,1) inset,
+    0 16px 34px rgba(31,45,61,.16);
+}
+
+/* ========= Bloque de Ventajas Blossom ========= */
+#ventajas {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  margin-top: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Encabezado */
+#ventajas h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #064663;
+  text-align: center;
+  position: relative;
+}
+
+/* Efecto de bloom decorativo */
+#ventajas::before,
+#ventajas::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0;
+}
+#ventajas::before {
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(157,218,252,.25) 0%, transparent 70%);
+  top: -60px; left: -60px;
+}
+#ventajas::after {
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(255,183,214,.28) 0%, transparent 70%);
+  bottom: -50px; right: -50px;
+}
+
+/* Lista de ventajas */
+#ventajas ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: .9rem;
+  position: relative;
+  z-index: 1;
+}
+#ventajas li {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  font-size: 1rem;
+  color: var(--fg);
+  background: linear-gradient(135deg, #fdfcff, #f8fbff);
+  border: 1px solid #e6ecfb;
+  border-radius: 14px;
+  padding: .6rem .8rem;
+  box-shadow: 0 3px 8px rgba(42,94,140,.08);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+#ventajas li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(42,94,140,.12);
+}
+
+/* Iconos lindos */
+#ventajas li .icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--celeste), var(--rosa));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+
+/* ========= Side cards (columna derecha) ========= */
+.side-cards{
+  display: grid;
+  gap: 1rem;
+  align-self: start;
+}
+
+.side-card{
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: var(--shadow);
+  overflow: hidden; /* recorta los pétalos */
+}
+
+.side-card.sc-highlight{
+  border-color: #ffd7e8;
+  box-shadow: 0 10px 24px rgba(255,143,185,.16);
+}
+
+.sc-title{
+  margin: .25rem 0 .35rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #064663;
+}
+
+.sc-text{ margin: 0; color: var(--muted); }
+.sc-list{
+  margin: .25rem 0 0;
+  padding-left: 1rem;
+  color: var(--fg);
+}
+.sc-list li{ margin: .25rem 0; }
+
+/* Pildoritas */
+.sc-pill{
+  display: inline-block;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .3px;
+  padding: .24rem .5rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--celeste), #e7f5ff);
+  color: #053d5d;
+  border: 1px solid rgba(255,255,255,.9);
+  box-shadow: 0 4px 12px rgba(58,160,243,.22);
+}
+.sc-pill.sc-pink{
+  background: linear-gradient(135deg, var(--rosa), #fff1f7);
+  color: #6b2141;
+}
+.sc-pill.sc-blue{
+  background: linear-gradient(135deg, #bfe4ff, #e7f5ff);
+  color: #053d5d;
+}
+.sc-pill.sc-gradient{
+  background: linear-gradient(135deg, var(--celeste), var(--rosa));
+  color: #083e63;
+}
+
+/* Pétalos internos (más saturados) en la esquina superior derecha */
+.side-card::before{
+  content:"";
+  position:absolute; top:-22px; right:-18px;
+  width: 230px; height: 150px; border-radius: 42%;
+  pointer-events:none;
+  /* tres lóbulos/pétalos superpuestos con mayor saturación */
+  background:
+    radial-gradient(85% 75% at 86% 22%, rgba(255,143,185,.48) 0 56%, rgba(255,143,185,0) 60%),
+    radial-gradient(82% 72% at 96% 8%,  rgba(58,160,243,.42) 0 48%, rgba(58,160,243,0) 52%),
+    radial-gradient(70% 64% at 74% 34%, rgba(255,214,234,.58) 0 38%, rgba(255,214,234,0) 42%);
+  /* sutil brillo para volumen */
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.25);
+}
+
+/* Bloom decorativo suave de fondo (se mantiene tenue) */
+.side-card::after{
+  content:"";
+  position:absolute; inset:-20% -10% auto auto;
+  width: 180px; height: 120px; border-radius: 50%;
+  background:
+    radial-gradient(60% 60% at 30% 40%, rgba(157,218,252,.28) 0 60%, transparent 62%),
+    radial-gradient(60% 60% at 70% 60%, rgba(255,183,214,.30) 0 60%, transparent 62%);
+  pointer-events:none;
+}
+
+/* Responsive: cuando el layout pasa a 1 columna, las side-cards quedan debajo del carrito */
+@media (max-width: 880px){
+  .side-cards{ order: 3; }
+}

@@ -1,21 +1,164 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style/styles.css">
-    <title>carrito</title>
+  <meta charset="UTF-8" />
+  <title> BLOSOSOM ICE </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Favicon SVG inline  -->
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjOWRkYWZjIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZmZDdlOCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIyMCIgcj0iMTYiIGZpbGw9InVybCgjZykiLz4KICA8cGF0aCBkPSJNMjYgMzZsNiAyNCA2LTI0eiIgZmlsbD0iI2Y0YTY2MCIvPgo8L3N2Zz4="
+  />
+
+  <!-- Fuente -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="style/styles.css" />
 </head>
 <body>
-    
-<main>
-  <section id="lista-productos"></section>
-  <aside id="carrito"></aside>
-  <section id="factura" hidden></section>
+  <main>
+    <section id="lista-productos"></section>
 
-</main>
+    <!-- Carrito como drawer (se abre/cierra con el FAB) -->
+    <aside id="carrito" class="drawer"></aside>
+<!-- ===== Tarjetitas informativas en la columna derecha ===== -->
+<section id="side-cards" class="side-cards" aria-label="Descubre Blossom">
+  <!-- Card 1 -->
+  <article class="side-card" role="note" aria-labelledby="sc-title-1">
+    <div class="sc-pill" aria-hidden="true">¿Sabías que?</div>
+    <h5 id="sc-title-1" class="sc-title">Usamos Fruta 100% natural</h5>
+    <p class="sc-text">Usamos pulpa real y <b>cero colorantes artificiales</b> para un sabor auténtico.</p>
+  </article>
 
-    
+  <!-- Card 2 -->
+  <article class="side-card" role="note" aria-labelledby="sc-title-2">
+    <div class="sc-pill sc-pink" aria-hidden="true">Ventajas</div>
+    <h5 id="sc-title-2" class="sc-title">Más cremoso, menos azúcar</h5>
+    <ul class="sc-list" aria-label="Beneficios del producto">
+      <li>Crema fresca pasteurizada</li>
+      <li>Endulzado balanceado</li>
+      <li>Proceso artesanal</li>
+    </ul>
+  </article>
+
+  <!-- Card 3 -->
+  <article class="side-card" role="note" aria-labelledby="sc-title-3">
+    <div class="sc-pill sc-blue" aria-hidden="true">Eco amigable</div>
+    <h5 id="sc-title-3" class="sc-title">Envases responsables</h5>
+    <p class="sc-text">Nuestros empaques son <b>reciclables y reutilizables</b>. ¡Cuida el planeta con Blossom!</p>
+  </article>
+
+  <!-- Card 4 -->
+  <article class="side-card sc-highlight" role="note" aria-labelledby="sc-title-4">
+    <div class="sc-pill sc-gradient" aria-hidden="true">Promo</div>
+    <h5 id="sc-title-4" class="sc-title">Happy Hour en agrandados GRATIS!</h5>
+    <p class="sc-text"><b>Este mes de 4–6 pm</b> en malteadas. Válido en sabores clásicos.</p>
+  </article>
+</section>
+<!-- ===== /Tarjetitas ===== -->
+
+    <!-- Factura previa -->
+    <section id="factura" hidden></section>
+  </main>
+
+  <!-- Historial de compras (debajo del grid) -->
+  <section id="historial" aria-label="Historial de compras"></section>
+
+  <!-- Modal de "Gracias" + ticket -->
+  <section id="gracias" hidden role="dialog" aria-modal="true" aria-labelledby="gracias-title">
+    <h3 id="gracias-title">¡Gracias por tu compra! </h3>
+    <p id="gracias-detalle"></p>
+    <div id="gracias-ticket"></div>
+    <button id="gracias-volver" class="btn btn-primary">Nueva compra</button>
+  </section>
+
+  <!-- Overlay para modal y drawer -->
+  <div id="overlay" hidden></div>
+
+  <!-- Toast -->
+  <div id="toast" role="status" aria-live="polite"></div>
+
+ <!-- Botón flotante del carrito con badge  -->
+<button id="cart-fab" class="btn btn-primary fab" aria-controls="carrito" aria-expanded="false" aria-label="Abrir carrito">
+  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+    <defs>
+      <linearGradient id="cartGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#9ddafc"/>
+        <stop offset="1" stop-color="#ffd7e8"/>
+      </linearGradient>
+    </defs>
+    <!-- ruedas -->
+    <circle cx="9" cy="19" r="1.8" fill="url(#cartGrad)"/>
+    <circle cx="17" cy="19" r="1.8" fill="url(#cartGrad)"/>
+    <!-- marco del carrito -->
+    <path d="M3 4h2l2.4 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H7"
+          fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <span id="cart-badge" class="badge">0</span>
+</button>
+
+
+ <footer id="footer" class="site-footer" role="contentinfo">
+  <div class="footer-inner">
+    <a class="brand" href="#">
+      
+<svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+  <defs>
+    <!-- pétalos bien saturados -->
+    <linearGradient id="rose-petal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff2f87"/>
+      <stop offset="1" stop-color="#ff74b5"/>
+    </linearGradient>
+    <!-- brillo suave de fondo -->
+    <radialGradient id="rose-glow" cx="50%" cy="40%" r="60%">
+      <stop offset="0" stop-color="#ffe0ef" stop-opacity=".95"/>
+      <stop offset="1" stop-color="#e7f5ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- halo -->
+  <circle cx="32" cy="32" r="30" fill="url(#rose-glow)"/>
+
+  <!-- flor (pétalos) -->
+  <g transform="translate(32,24)">
+    <circle cx="0" cy="-8" r="8" fill="url(#rose-petal)" stroke="#c61d6d" stroke-width="1"/>
+    <circle cx="8" cy="0"  r="8" fill="url(#rose-petal)" stroke="#c61d6d" stroke-width="1"/>
+    <circle cx="0" cy="8"  r="8" fill="url(#rose-petal)" stroke="#c61d6d" stroke-width="1"/>
+    <circle cx="-8" cy="0" r="8" fill="url(#rose-petal)" stroke="#c61d6d" stroke-width="1"/>
+    <circle cx="0" cy="0"  r="6.6" fill="url(#rose-petal)" stroke="#c61d6d" stroke-width="1"/>
+    <!-- centro con pequeño brillo -->
+    <circle cx="0" cy="0" r="3.2" fill="#ffffff" stroke="#e6ecfb" stroke-width=".8"/>
+  </g>
+
+  <!-- tallo y hojas en celeste blossom -->
+  <path d="M32 34 C 33 40, 34 48, 32 56" fill="none" stroke="#3aa0f3" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M32 44 C 27 43, 24 40, 22 36 C 26 37, 29 38, 32 41 Z"
+        fill="#9ddafc" stroke="#3aa0f3" stroke-width="1"/>
+  <path d="M32 48 C 37 47, 40 44, 42 40 C 38 41, 35 42, 32 45 Z"
+        fill="#9ddafc" stroke="#3aa0f3" stroke-width="1"/>
+
+  <!-- contorno suave -->
+  <circle cx="32" cy="32" r="31" fill="none" stroke="#e6ecfb" stroke-width="1"/>
+</svg>
+
+
+      <span class="brand-name">Blossom Ice</span>
+    </a>
+
+    <nav class="footer-nav" aria-label="Enlaces">
+      <a>Gracias por preferirnos</a>
+    </nav>
+
+    <p class="copy">© 2025 Blossom Ice. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+
+  <!-- Script principal -->
+  <script src="./js/main.js" defer></script>
 </body>
-<script src="./js/main.js" defer></script>
 </html>
