@@ -72,9 +72,17 @@ main{
 }
 .btn:active{transform:translateY(1px)}
 .btn-primary{
-  background:linear-gradient(135deg,var(--celeste),#e7f5ff);
-  color:#064663;box-shadow:0 6px 14px rgba(58,160,243,.25)
+  background: linear-gradient(135deg, #3aa0f3, #9ddafc, #ffd7e8);
+  color: #053d5d;
+  box-shadow: 0 6px 16px rgba(255,143,185,.35);
 }
+.fab svg path,
+.fab svg circle {
+  stroke: #ff3b6f !important; 
+  fill: #ff3b6f !important;   
+}
+
+
 .btn-danger{
   background:linear-gradient(135deg,var(--rosa),#fff1f7);
   color:#6b2141;box-shadow:0 6px 14px rgba(255,143,185,.25)
@@ -483,4 +491,36 @@ main{ flex: 1; }
 /* Responsive: cuando el layout pasa a 1 columna, las side-cards quedan debajo del carrito */
 @media (max-width: 880px){
   .side-cards{ order: 3; }
+}
+
+/* ===== Anillo rojo pegado al FAB (carrito) ===== */
+:root{
+  --fab-ring: #ff2f87; /* mismo rojo de los pétalos */
+}
+
+/* Aplicamos el anillo al botón flotante del carrito */
+#cart-fab{
+  /* 1º shadow: anillo pegado (spread 3px) — 2º shadow: sombra normal del botón */
+  box-shadow: 0 0 0 3px var(--fab-ring), 0 6px 14px rgba(58,160,243,.25);
+  outline: none; /* por si el navegador agrega outline */
+}
+
+/* Hover: un poquito más de profundidad */
+#cart-fab:hover{
+  box-shadow: 0 0 0 3px var(--fab-ring), 0 10px 22px rgba(31,45,61,.18);
+}
+
+/* Accesibilidad con teclado */
+#cart-fab:focus-visible{
+  box-shadow: 0 0 0 4px var(--fab-ring), 0 0 0 7px rgba(255,47,135,.16), 0 10px 22px rgba(31,45,61,.18);
+}
+
+/* ===== FAB un poco más arriba ===== */
+#cart-fab{
+  top: 48px; /* antes 64px */
+}
+
+/* (Opcional) si quieres que el widget de al lado quede alineado con el FAB */
+.fab-widget{
+  top: 48px; /* antes 64px */
 }
