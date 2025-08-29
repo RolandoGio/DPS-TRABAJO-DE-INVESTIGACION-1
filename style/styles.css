@@ -517,10 +517,10 @@ main{ flex: 1; }
 
 /* ===== FAB un poco más arriba ===== */
 #cart-fab{
-  top: 48px; /* antes 64px */
+  top: 48px; 
 }
 
-/* (Opcional) si quieres que el widget de al lado quede alineado con el FAB */
+
 .fab-widget{
-  top: 48px; /* antes 64px */
+  top: 48px; 
 }
